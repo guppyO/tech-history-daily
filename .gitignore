@@ -1,0 +1,21 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+
+# Output directory (optional - depends on deployment strategy)
+# If deploying the output directly, you might not ignore it.
+# If building/syncing elsewhere, you might ignore it.
+# output_html/
+
+# IDE specific files
+.vscode/
+.idea/
+
+# Dependency directories
+venv/
+*.egg-info/
