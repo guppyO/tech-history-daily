@@ -51,11 +51,14 @@ def fetch_data():
         logging.info(f"Found 'Events' heading: <{events_h2.name} id='{events_h2.get('id')}'>")
 
         tech_events = []
-        tech_keywords = ["computer", "internet", "software", "semiconductor", "microprocessor", "apple", "microsoft", "google", "ibm", "intel", "nasa", "space", "digital", "network", "web", "programming", "code", "algorithm", "robot", "phone", "mobile", "at&t", "system/360", "rfc 1"] # Added more specific keywords
+        tech_keywords = ["computer", "internet", "software", "semiconductor", "microprocessor", "apple", "microsoft", "google", "ibm", "intel", "nasa", "space", "digital", "network", "web", "programming", "code", "algorithm", "robot", "phone", "mobile", "at&t", "system/360", "rfc 1"]
 
         # Iterate through subsequent siblings until the next H2 (e.g., "Births")
+        logging.debug("Starting iteration through siblings after Events H2...")
         for element in events_h2.find_next_siblings():
+            logging.debug(f"Processing sibling element: <{element.name}>") # Log sibling tag name
             if element.name == 'h2':
+                logging.debug("Found next H2, stopping sibling iteration.")
                 break # Stop when we hit the next main section
 
             # Process any UL elements found
@@ -68,7 +71,16 @@ def fetch_data():
                     logging.debug(f"Checking item text: '{item_text_content}'")
 
                     # Check if any tech keyword is in the list item text
-                    if any(keyword in item_text_content for keyword in tech_keywords):
+                    keyword_found = False
+                    matching_keyword = None
+                    for keyword in tech_keywords:
+                        if keyword in item_text_content:
+                            keyword_found = True
+                            matching_keyword = keyword
+                            break # Found one, no need to check others for this item
+
+                    if keyword_found:
+                         logging.debug(f"  Keyword '{matching_keyword}' FOUND in item: '{item_text_content[:50]}...'") # Log if keyword found
                          # Basic cleanup: remove citation needed tags etc. before appending
                          cleaned_item = item
                          for tag in cleaned_item.find_all(['sup', 'span'], {'class': ['reference', 'noprint']}):
