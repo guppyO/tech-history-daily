@@ -1,4 +1,5 @@
 # Main script for the automated content generator
+import subprocess
 import os
 import requests
 from bs4 import BeautifulSoup
@@ -14,7 +15,7 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # --- Configuration ---
-OUTPUT_DIR = "output_html"
+OUTPUT_DIR = "." # Output files to the project root
 # Example: Define a source URL or API endpoint
 # SOURCE_URL = os.getenv("SOURCE_URL") 
 
@@ -181,8 +182,41 @@ def job():
             # Use date for filename to avoid overwriting and create archives
             filename = f"{data.get('date', datetime.now().strftime('%Y-%m-%d'))}.html" 
             save_html(html, filename)
+            # --- Automatic Deployment using Git ---
+            try:
+                logging.info("Attempting to deploy changes via Git...")
+                # Stage all changes in the current directory (project root)
+                subprocess.run(['git', 'add', '.'], check=True, capture_output=True, text=True, cwd='.') # Run from script's dir (content_generator)
+
+                # Check if there are any changes staged
+                # Use --quiet to exit with 1 if changes, 0 if not.
+                status_check = subprocess.run(['git', 'diff', '--quiet', '--cached'], cwd='.')
+                
+                if status_check.returncode != 0: # If exit code is non-zero, there are staged changes
+                    commit_message = f"Update content for {data.get('date', 'Unknown Date')}"
+                    subprocess.run(['git', 'commit', '-m', commit_message], check=True, capture_output=True, text=True, cwd='.')
+                    logging.info("Changes committed.")
+                    
+                    # Push the changes
+                    logging.info("Pushing changes to origin main...")
+                    push_result = subprocess.run(['git', 'push', 'origin', 'main'], check=True, capture_output=True, text=True, cwd='.')
+                    logging.info("Changes pushed successfully.")
+                    logging.debug(f"Git push output: {push_result.stdout}\n{push_result.stderr}")
+                else:
+                    logging.info("No changes detected in output_html to commit.")
+                    
+            except subprocess.CalledProcessError as e:
+                logging.error(f"Git command failed: {e}")
+                logging.error(f"Command: {' '.join(e.cmd)}")
+                logging.error(f"Stderr: {e.stderr}")
+                logging.error(f"Stdout: {e.stdout}")
+            except FileNotFoundError:
+                 logging.error("Git command not found. Ensure Git is installed and in the system's PATH.")
+            except Exception as e:
+                logging.exception("An unexpected error occurred during Git deployment.")
+            # --- End Automatic Deployment ---
+
             # TODO: Add logic here to potentially update an index.html file
-            # TODO: Add logic here for deployment (e.g., git commit/push, sync command)
         else:
             logging.warning("No data fetched, skipping HTML generation.")
     except Exception as e:
