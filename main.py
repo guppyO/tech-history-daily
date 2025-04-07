@@ -50,33 +50,42 @@ def fetch_data():
         
         logging.info(f"Found 'Events' heading: <{events_h2.name} id='{events_h2.get('id')}'>")
 
-        # Find all <ul> tags that appear *after* the H2 heading in the document
-        potential_lists = events_h2.find_all_next('ul')
-
-        if not potential_lists:
-             logging.warning(f"Could not find any 'ul' tags following the 'Events' H2 on {wiki_url}")
-             return None
-        
-        # Assume the first <ul> found after the heading is the correct one
-        events_list = potential_lists[0]
-        logging.info(f"Found potential events list (first UL after heading).")
-
-
         tech_events = []
         tech_keywords = ["computer", "internet", "software", "semiconductor", "microprocessor", "apple", "microsoft", "google", "ibm", "intel", "nasa", "space", "digital", "network", "web", "programming", "code", "algorithm", "robot", "phone", "mobile"]
 
-        list_items = events_list.find_all('li') # Search recursively within the list
-        for item in list_items:
-            logging.info(f"  -- Checking li: {item.get_text(strip=True)[:100]}...") # Log item text (truncated)
-            text = item.get_text().lower()
-            # Check if any tech keyword is in the list item text
-            if any(keyword in text for keyword in tech_keywords):
-                 # Basic cleanup: remove citation needed tags etc.
-                for tag in item.find_all(['sup', 'span'], {'class': ['reference', 'noprint']}):
-                    tag.decompose()
-                event_text = item.get_text(strip=True)
-                logging.info(f"  -- Found matching event: {event_text}") # Log matched event
-                tech_events.append(event_text)
+        # Find the next H2 tag after the 'Events' H2 to define the section boundary
+        next_h2 = events_h2.find_next_sibling('h2')
+        
+        logging.info(f"Processing elements between Events H2 and next H2 ({'found' if next_h2 else 'not found'})...")
+
+        # Iterate through all elements between the 'Events' H2 and the next H2
+        current_element = events_h2.find_next_sibling()
+        while current_element and current_element != next_h2:
+            # Find all UL lists within this element or the element itself if it's a UL
+            lists_to_process = []
+            if current_element.name == 'ul':
+                lists_to_process.append(current_element)
+            else:
+                # Also find ULs nested within other tags like divs
+                lists_to_process.extend(current_element.find_all('ul'))
+
+            if lists_to_process:
+                logging.debug(f"Found {len(lists_to_process)} UL(s) under sibling <{current_element.name}>")
+                for events_list in lists_to_process:
+                    list_items = events_list.find_all('li') # Search recursively
+                    for item in list_items:
+                        logging.info(f"  -- Checking li: {item.get_text(strip=True)[:100]}...") # Log item text (truncated)
+                        text = item.get_text().lower()
+                        # Check if any tech keyword is in the list item text
+                        if any(keyword in text for keyword in tech_keywords):
+                             # Basic cleanup: remove citation needed tags etc.
+                            for tag in item.find_all(['sup', 'span'], {'class': ['reference', 'noprint']}):
+                                tag.decompose()
+                            event_text = item.get_text(strip=True)
+                            logging.info(f"  -- Found matching event: {event_text}") # Log matched event
+                            tech_events.append(event_text)
+
+            current_element = current_element.find_next_sibling() # Move to the next element
 
         if not tech_events:
             logging.info(f"No specific tech events found for {month_day} on Wikipedia.")
