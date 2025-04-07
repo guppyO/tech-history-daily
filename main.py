@@ -92,7 +92,7 @@ def fetch_data():
             body_content = "<ul>\n" + "\n".join(f"  <li>{event}</li>" for event in tech_events) + "\n</ul>"
 
         data = {
-            "title": f"On This Day in Tech History: {now.strftime('%B %d, %Y')}",
+            "title": f"Tech History for {now.strftime('%B %d')}", # Removed the current year
             "body": body_content,
             "date": now.strftime("%Y-%m-%d")
         }

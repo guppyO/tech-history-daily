@@ -13,6 +13,13 @@
     --max-width: 900px; /* Slightly wider */
 }
 
+html {
+    box-sizing: border-box;
+}
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
 body {
     font-family: 'Lato', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     line-height: 1.7;
@@ -25,14 +32,24 @@ body {
     min-height: 100vh;
 }
 
-.container { /* Add this class to a wrapper div in HTML if needed, or apply max-width/margin to body/main */
+.container { /* Apply this class to a wrapper div around header/main/footer in HTML templates if needed */
     width: 100%;
     max-width: var(--max-width);
     margin: 30px auto; /* Increased top/bottom margin */
     padding: 0 20px;
     flex-grow: 1; /* Pushes footer down */
-    box-sizing: border-box; /* Include padding in width calculation */
 }
+
+/* Apply container styles directly to body children if no container div is used */
+body > header, body > main, body > footer {
+     width: 100%;
+     max-width: var(--max-width);
+     margin-left: auto;
+     margin-right: auto;
+     padding-left: 20px;
+     padding-right: 20px;
+}
+
 
 header, footer {
     background-color: var(--header-footer-background);
@@ -45,6 +62,7 @@ header, footer {
 
 header {
     border-bottom: 4px solid var(--link-color); /* Thicker accent border */
+    margin-top: 20px; /* Add space at the top */
 }
 
 header h1 {
@@ -71,6 +89,7 @@ main {
     box-shadow: 0 4px 8px rgba(0,0,0,0.06); /* Slightly stronger shadow */
     border: 1px solid var(--border-color);
     margin-bottom: 30px; /* Ensure space before footer */
+    flex-grow: 1; /* Allow main content to fill space */
 }
 
 main h2 {
@@ -99,13 +118,14 @@ li {
 }
 
 footer {
-    margin-top: 40px;
+    margin-top: auto; /* Push footer to bottom */
     padding: 20px 30px; /* Increased padding */
     font-size: 0.9em;
     text-align: center;
     border-top: 1px solid var(--border-color);
     background-color: var(--header-footer-background); /* Match header */
     border-radius: 8px;
+    margin-bottom: 20px; /* Add space at the bottom */
 }
 
 footer p {
@@ -131,8 +151,10 @@ a:hover {
 
 /* Basic Responsiveness */
 @media (max-width: 768px) {
-     :root {
-        --max-width: 95%; /* Use percentage for smaller screens */
+     body > header, body > main, body > footer {
+         max-width: 95%;
+         padding-left: 15px;
+         padding-right: 15px;
     }
     header h1 {
         font-size: 1.8em;
@@ -142,10 +164,6 @@ a:hover {
     }
     header, main, footer {
         padding: 20px; /* Adjust padding */
-    }
-     .container {
-         padding: 0 15px;
-         margin: 20px auto;
     }
 }
 
@@ -161,10 +179,6 @@ a:hover {
     }
      header, main, footer {
         padding: 15px;
-    }
-     .container {
-         padding: 0 10px;
-         margin: 15px auto;
     }
      ul {
         padding-left: 20px;
