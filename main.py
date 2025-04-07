@@ -60,7 +60,7 @@ def fetch_data():
         tech_events = []
         tech_keywords = ["computer", "internet", "software", "semiconductor", "microprocessor", "apple", "microsoft", "google", "ibm", "intel", "nasa", "space", "digital", "network", "web", "programming", "code", "algorithm", "robot", "phone", "mobile"]
 
-        list_items = events_list.find_all('li', recursive=False) # Get only direct children li
+        list_items = events_list.find_all('li') # Search recursively within the list
         for item in list_items:
             text = item.get_text().lower()
             # Check if any tech keyword is in the list item text
@@ -328,12 +328,14 @@ scheduler.add_job(job, 'cron', hour=1, minute=0)
 
 # --- Main Execution ---
 if __name__ == "__main__":
-    logging.info("Starting the scheduler...")
-    # Optional: Run the job once immediately on startup before scheduling
-    # logging.info("Running initial job before starting scheduler...")
-    # job()
-    
-    try:
-        scheduler.start()
-    except (KeyboardInterrupt, SystemExit):
-        logging.info("Scheduler stopped.")
+    # Run the job once immediately for testing scraping fix
+    logging.info("Running job manually one time for scraping test...")
+    job()
+    logging.info("Manual scraping test job run finished.")
+
+    # We are stopping here for now, not starting the scheduler for this manual run.
+    # logging.info("Starting the scheduler...")
+    # try:
+    #     scheduler.start()
+    # except (KeyboardInterrupt, SystemExit):
+    #     logging.info("Scheduler stopped.")
