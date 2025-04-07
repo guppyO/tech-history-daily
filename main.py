@@ -53,54 +53,57 @@ def fetch_data():
         tech_events = []
         tech_keywords = ["computer", "internet", "software", "semiconductor", "microprocessor", "apple", "microsoft", "google", "ibm", "intel", "nasa", "space", "digital", "network", "web", "programming", "code", "algorithm", "robot", "phone", "mobile", "at&t", "system/360", "rfc 1"]
 
-        # Iterate through subsequent siblings until the next H2 (e.g., "Births")
-        logging.debug("Starting iteration through siblings after Events H2...")
-        for element in events_h2.find_next_siblings():
-            logging.debug(f"Processing sibling element: <{element.name}>") # Log sibling tag name
+        # Iterate through *all* subsequent tags until the next H2
+        logging.debug("Starting iteration through all tags after Events H2...")
+        for element in events_h2.find_all_next():
+            # Stop if we hit the next H2 (e.g., "Births", "Deaths")
             if element.name == 'h2':
-                logging.debug("Found next H2, stopping sibling iteration.")
-                break # Stop when we hit the next main section
+                logging.debug(f"Found next H2 ('{element.get_text(strip=True)[:30]}...'), stopping processing for Events.")
+                break
 
-            # Process any UL elements found
+            # Process only UL elements encountered
             if element.name == 'ul':
                 list_items = element.find_all('li', recursive=False)
-                logging.debug(f"Processing UL with {len(list_items)} direct li elements.")
+                logging.debug(f"Processing a UL with {len(list_items)} direct li elements.")
                 for item in list_items:
-                    # Get text from the item, including nested tags like <a>
                     item_text_content = item.get_text(" ", strip=True).lower()
                     logging.debug(f"Checking item text: '{item_text_content}'")
 
-                    # Check if any tech keyword is in the list item text
                     keyword_found = False
                     matching_keyword = None
                     for keyword in tech_keywords:
+                        # Use word boundaries (\b) for keywords like 'web' to avoid matching 'webster' etc.
+                        # Handle potential regex special characters in keywords if necessary
+                        # For simplicity now, just check substring containment
                         if keyword in item_text_content:
                             keyword_found = True
                             matching_keyword = keyword
-                            break # Found one, no need to check others for this item
+                            break
 
                     if keyword_found:
-                         logging.debug(f"  Keyword '{matching_keyword}' FOUND in item: '{item_text_content[:50]}...'") # Log if keyword found
-                         # Basic cleanup: remove citation needed tags etc. before appending
+                         logging.debug(f"  Keyword '{matching_keyword}' FOUND in item: '{item_text_content[:50]}...'")
                          cleaned_item = item
                          for tag in cleaned_item.find_all(['sup', 'span'], {'class': ['reference', 'noprint']}):
                              tag.decompose()
-                         # Append the cleaned text of the list item
                          event_text = cleaned_item.get_text(" ", strip=True)
-                         tech_events.append(event_text)
-                         logging.info(f"Found tech event: {event_text[:80]}...") # Log found events
+                         # Avoid duplicates if the same event is listed under multiple subheadings
+                         if event_text not in tech_events:
+                              tech_events.append(event_text)
+                              logging.info(f"Found tech event: {event_text[:80]}...")
+                         else:
+                              logging.debug(f"Skipping duplicate event: {event_text[:80]}...")
+
 
         if not tech_events:
             logging.info(f"No specific tech events found for {month_day} on Wikipedia using keywords.")
-            body_content = "<p>No specific tech events found for today.</p>" # Use paragraph tag
+            body_content = "<p>No specific tech events found for today.</p>"
         else:
-            # Format as an HTML list
-            logging.info(f"Found {len(tech_events)} tech event(s).")
+            logging.info(f"Found {len(tech_events)} unique tech event(s).")
             body_content = "<ul>\n" + "\n".join(f"  <li>{event}</li>" for event in tech_events) + "\n</ul>"
 
         data = {
             "title": f"On This Day in Tech History: {now.strftime('%B %d, %Y')}",
-            "body": body_content, # Use the generated body content
+            "body": body_content,
             "date": now.strftime("%Y-%m-%d")
         }
         logging.info(f"Successfully fetched and processed tech events for {month_day}.")
