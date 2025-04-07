@@ -108,12 +108,10 @@ def generate_html(data):
     <meta name="description" content="Tech history events for {date_str}. Discover what happened in technology on this day.">
     <title>{title}</title>
     <link rel="stylesheet" href="style.css">
-    <!--
-        Placeholder for Google AdSense Auto Ads script
-        (Get this from your AdSense account)
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_PUB_ID"
-                crossorigin="anonymous"></script>
-    -->
+    <!-- Google AdSense Verification/Auto Ads Code -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1226435955298586"
+         crossorigin="anonymous"></script>
+    <!-- End Google AdSense Code -->
     <!--
         Placeholder for Analytics (e.g., Google Analytics)
         (Get this from your Analytics account)
@@ -231,12 +229,14 @@ scheduler.add_job(job, 'cron', hour=1, minute=0)
 
 # --- Main Execution ---
 if __name__ == "__main__":
-    logging.info("Starting the scheduler...")
-    # Optional: Run the job once immediately on startup before scheduling
-    # logging.info("Running initial job before starting scheduler...")
-    # job()
-    
-    try:
-        scheduler.start()
-    except (KeyboardInterrupt, SystemExit):
-        logging.info("Scheduler stopped.")
+    # Run the job once immediately to update with AdSense code
+    logging.info("Running job manually one time...")
+    job()
+    logging.info("Manual job run finished.")
+
+    # We are stopping here for now, not starting the scheduler for this manual run.
+    # logging.info("Starting the scheduler...")
+    # try:
+    #     scheduler.start()
+    # except (KeyboardInterrupt, SystemExit):
+    #     logging.info("Scheduler stopped.")
