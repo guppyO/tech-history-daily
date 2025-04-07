@@ -67,13 +67,16 @@ def fetch_data():
 
         list_items = events_list.find_all('li') # Search recursively within the list
         for item in list_items:
+            logging.info(f"  -- Checking li: {item.get_text(strip=True)[:100]}...") # Log item text (truncated)
             text = item.get_text().lower()
             # Check if any tech keyword is in the list item text
             if any(keyword in text for keyword in tech_keywords):
                  # Basic cleanup: remove citation needed tags etc.
                 for tag in item.find_all(['sup', 'span'], {'class': ['reference', 'noprint']}):
                     tag.decompose()
-                tech_events.append(item.get_text(strip=True))
+                event_text = item.get_text(strip=True)
+                logging.info(f"  -- Found matching event: {event_text}") # Log matched event
+                tech_events.append(event_text)
 
         if not tech_events:
             logging.info(f"No specific tech events found for {month_day} on Wikipedia.")
