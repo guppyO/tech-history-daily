@@ -12,7 +12,7 @@ from datetime import datetime
 load_dotenv()
 
 # Basic Logging Setup
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s') # Set level to DEBUG
 
 # --- Configuration ---
 OUTPUT_DIR = "." # Output files to the project root
@@ -73,6 +73,7 @@ def fetch_data():
         for item in list_items:
             # Get text from the item, including nested tags like <a>
             item_text_content = item.get_text(" ", strip=True).lower()
+            logging.debug(f"Checking item text: '{item_text_content}'") # DEBUG LINE ADDED
             
             # Check if any tech keyword is in the list item text
             if any(keyword in item_text_content for keyword in tech_keywords):
