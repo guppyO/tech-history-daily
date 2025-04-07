@@ -328,14 +328,12 @@ scheduler.add_job(job, 'cron', hour=1, minute=0)
 
 # --- Main Execution ---
 if __name__ == "__main__":
-    # Run the job once immediately for testing archive update
-    logging.info("Running job manually one time for archive test...")
-    job()
-    logging.info("Manual archive test job run finished.")
-
-    # We are stopping here for now, not starting the scheduler for this manual run.
-    # logging.info("Starting the scheduler...")
-    # try:
-    #     scheduler.start()
-    # except (KeyboardInterrupt, SystemExit):
-    #     logging.info("Scheduler stopped.")
+    logging.info("Starting the scheduler...")
+    # Optional: Run the job once immediately on startup before scheduling
+    # logging.info("Running initial job before starting scheduler...")
+    # job()
+    
+    try:
+        scheduler.start()
+    except (KeyboardInterrupt, SystemExit):
+        logging.info("Scheduler stopped.")
