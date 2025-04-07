@@ -121,8 +121,7 @@ def generate_html(data):
     <header>
         <h1>{title}</h1>
         <p>Date: {date_str}</p>
-        <!-- Optional: Link back to an index page -->
-        <!-- <p><a href="index.html">Back to Archive</a></p> -->
+        <p><a href="index.html">Home</a> | <a href="archive.html">Archive</a></p>
     </header>
 
     <main>
@@ -156,6 +155,105 @@ def generate_html(data):
     logging.info("HTML generated successfully.")
     return html_content
 
+def update_archive(new_page_filename, page_title):
+    """Reads archive.html, adds the new link, sorts, and rewrites the file."""
+    logging.info(f"Updating archive with: {new_page_filename}")
+    archive_file = "archive.html"
+    new_link = f'<li><a href="{new_page_filename}">{page_title}</a></li>'
+    links = []
+    placeholder_text = "<!-- Links will be automatically added here by the script -->"
+    list_start_tag = '<ul id="archive-list">'
+    list_end_tag = '</ul>'
+
+    try:
+        # Read existing archive content
+        if os.path.exists(archive_file):
+            with open(archive_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+                
+            # Extract existing links using BeautifulSoup for robustness
+            soup = BeautifulSoup(content, 'html.parser')
+            archive_list_ul = soup.find('ul', {'id': 'archive-list'})
+            if archive_list_ul:
+                existing_links = archive_list_ul.find_all('li')
+                # Filter out placeholder if present
+                links = [str(li) for li in existing_links if "No entries generated yet." not in li.get_text()]
+            else:
+                 logging.warning(f"Could not find <ul id='archive-list'> in {archive_file}. Starting fresh.")
+                 content = "" # Reset content if list not found
+
+        else:
+            logging.warning(f"{archive_file} not found. Creating a new one.")
+            # Create basic structure if file doesn't exist
+            content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive - Daily Tech History</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google AdSense Verification/Auto Ads Code -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1226435955298586"
+         crossorigin="anonymous"></script>
+    <!-- End Google AdSense Code -->
+</head>
+<body>
+    <header>
+        <h1>Archive - Daily Tech History</h1>
+        <p>Browse past entries.</p>
+        <p><a href="index.html">Back to Home</a></p>
+    </header>
+    <main>
+        <h2>Past Entries</h2>
+        {list_start_tag}
+            {placeholder_text}
+        {list_end_tag}
+    </main>
+    <footer>
+        <p>Powered by Automated Content Generator.</p>
+        <p><a href="https://github.com/guppyO/tech-history-daily" target="_blank" rel="noopener noreferrer">Project Source</a></p>
+    </footer>
+</body>
+</html>"""
+
+        # Add the new link if it's not already there
+        if new_link not in links:
+            links.append(new_link)
+
+        # Sort links based on filename (date) - descending (newest first)
+        # Extract date from filename like 'YYYY-MM-DD.html'
+        def get_date_from_link(link_str):
+            try:
+                 href = BeautifulSoup(link_str, 'html.parser').find('a')['href']
+                 return href.split('.')[0] # Get 'YYYY-MM-DD'
+            except:
+                 return "0000-00-00" # Fallback for sorting
+
+        links.sort(key=get_date_from_link, reverse=True)
+
+        # Prepare the new list content
+        new_list_content = "\n            ".join(links) if links else f"<li>No entries generated yet.</li>"
+
+        # Replace the old list content (or placeholder) with the new sorted list
+        start_index = content.find(list_start_tag)
+        end_index = content.find(list_end_tag)
+
+        if start_index != -1 and end_index != -1:
+            start_index += len(list_start_tag) # Move index past the start tag
+            # Ensure newline and indentation consistency
+            new_content = content[:start_index] + f"\n            {new_list_content}\n        " + content[end_index:]
+        else:
+             logging.error(f"Could not find list tags in {archive_file} template/content. Cannot update.")
+             return # Avoid writing if structure is broken
+
+        # Write the updated content back to archive.html
+        with open(archive_file, 'w', encoding='utf-8') as f:
+            f.write(new_content)
+        logging.info(f"Successfully updated {archive_file}")
+
+    except Exception as e:
+        logging.exception(f"An error occurred while updating {archive_file}: {e}")
+
 def save_html(html_content, filename):
     """Saves the generated HTML to a file."""
     if not os.path.exists(OUTPUT_DIR):
@@ -180,6 +278,7 @@ def job():
             # Use date for filename to avoid overwriting and create archives
             filename = f"{data.get('date', datetime.now().strftime('%Y-%m-%d'))}.html" 
             save_html(html, filename)
+            update_archive(filename, data.get('title', 'Unknown Title')) # Call update_archive
             # --- Automatic Deployment using Git ---
             try:
                 logging.info("Attempting to deploy changes via Git...")
@@ -229,10 +328,10 @@ scheduler.add_job(job, 'cron', hour=1, minute=0)
 
 # --- Main Execution ---
 if __name__ == "__main__":
-    # Run the job once immediately to update with AdSense code
-    logging.info("Running job manually one time...")
+    # Run the job once immediately for testing archive update
+    logging.info("Running job manually one time for archive test...")
     job()
-    logging.info("Manual job run finished.")
+    logging.info("Manual archive test job run finished.")
 
     # We are stopping here for now, not starting the scheduler for this manual run.
     # logging.info("Starting the scheduler...")
