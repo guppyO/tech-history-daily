@@ -32,15 +32,7 @@ body {
     min-height: 100vh;
 }
 
-.container { /* Apply this class to a wrapper div around header/main/footer in HTML templates if needed */
-    width: 100%;
-    max-width: var(--max-width);
-    margin: 30px auto; /* Increased top/bottom margin */
-    padding: 0 20px;
-    flex-grow: 1; /* Pushes footer down */
-}
-
-/* Apply container styles directly to body children if no container div is used */
+/* Apply container styles directly to body children */
 body > header, body > main, body > footer {
      width: 100%;
      max-width: var(--max-width);
@@ -48,6 +40,7 @@ body > header, body > main, body > footer {
      margin-right: auto;
      padding-left: 20px;
      padding-right: 20px;
+     box-sizing: border-box; /* Ensure padding is included */
 }
 
 
