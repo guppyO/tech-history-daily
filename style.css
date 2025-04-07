@@ -2,15 +2,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
 
 :root {
-    --primary-text-color: #333;
-    --secondary-text-color: #555;
-    --background-color: #f4f7f6; /* Slightly off-white */
+    --primary-text-color: #343a40; /* Darker grey */
+    --secondary-text-color: #6c757d; /* Medium grey */
+    --background-color: #f8f9fa; /* Very light grey */
     --content-background: #ffffff;
-    --header-footer-background: #e9ecef;
-    --border-color: #dee2e6;
-    --link-color: #0056b3;
-    --link-hover-color: #003d80;
-    --max-width: 850px;
+    --header-footer-background: #e9ecef; /* Light grey */
+    --border-color: #dee2e6; /* Lighter border */
+    --link-color: #0056b3; /* Standard blue */
+    --link-hover-color: #003d80; /* Darker blue */
+    --max-width: 900px; /* Slightly wider */
 }
 
 body {
@@ -25,17 +25,18 @@ body {
     min-height: 100vh;
 }
 
-.container {
+.container { /* Add this class to a wrapper div in HTML if needed, or apply max-width/margin to body/main */
     width: 100%;
     max-width: var(--max-width);
-    margin: 20px auto;
+    margin: 30px auto; /* Increased top/bottom margin */
     padding: 0 20px;
     flex-grow: 1; /* Pushes footer down */
+    box-sizing: border-box; /* Include padding in width calculation */
 }
 
 header, footer {
     background-color: var(--header-footer-background);
-    padding: 20px 30px;
+    padding: 25px 30px; /* Increased padding */
     margin-bottom: 30px;
     border-radius: 8px;
     color: var(--secondary-text-color);
@@ -43,63 +44,68 @@ header, footer {
 }
 
 header {
-    border-bottom: 3px solid var(--link-color);
+    border-bottom: 4px solid var(--link-color); /* Thicker accent border */
 }
 
 header h1 {
     margin: 0 0 10px 0;
     color: var(--primary-text-color);
-    font-size: 2em;
+    font-size: 2.2em; /* Larger title */
     font-weight: 700;
 }
 
 header p {
-    margin: 5px 0;
+    margin: 8px 0; /* Slightly more spacing */
     font-size: 1em;
 }
 
 header p a {
-    margin-right: 10px;
+    margin-right: 15px; /* More spacing for nav links */
+    font-weight: 700;
 }
 
 main {
     background-color: var(--content-background);
-    padding: 30px;
+    padding: 30px 40px; /* Increased padding */
     border-radius: 8px;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.06); /* Slightly stronger shadow */
     border: 1px solid var(--border-color);
+    margin-bottom: 30px; /* Ensure space before footer */
 }
 
 main h2 {
     margin-top: 0;
-    margin-bottom: 20px;
+    margin-bottom: 25px; /* More space below heading */
     color: var(--primary-text-color);
     border-bottom: 2px solid var(--border-color);
-    padding-bottom: 10px;
-    font-size: 1.6em;
+    padding-bottom: 15px; /* More space below heading line */
+    font-size: 1.8em; /* Larger section heading */
     font-weight: 700;
 }
 
 ul {
-    padding-left: 25px;
-    list-style: disc; /* Use standard bullets */
+    padding-left: 30px; /* Deeper indent */
+    list-style: disc;
 }
 
 li {
-    margin-bottom: 12px;
+    margin-bottom: 15px; /* More space between list items */
 }
 
 /* Specific styling for archive list links */
 #archive-list li a {
     font-weight: 700;
+    font-size: 1.05em;
 }
 
 footer {
     margin-top: 40px;
-    padding: 15px 30px;
+    padding: 20px 30px; /* Increased padding */
     font-size: 0.9em;
     text-align: center;
     border-top: 1px solid var(--border-color);
+    background-color: var(--header-footer-background); /* Match header */
+    border-radius: 8px;
 }
 
 footer p {
@@ -120,22 +126,47 @@ a:hover {
 /* Placeholder for ad units (no visual change needed) */
 .ad-placeholder {
     /* Keep this minimal or remove if not using specific unit placeholders */
-    margin: 20px 0;
+    margin: 25px 0; /* More spacing around ads */
 }
 
 /* Basic Responsiveness */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+     :root {
+        --max-width: 95%; /* Use percentage for smaller screens */
+    }
     header h1 {
-        font-size: 1.6em;
+        font-size: 1.8em;
     }
     main h2 {
-        font-size: 1.4em;
+        font-size: 1.5em;
     }
     header, main, footer {
-        padding: 15px 20px;
+        padding: 20px; /* Adjust padding */
     }
-    .container {
+     .container {
          padding: 0 15px;
+         margin: 20px auto;
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 1.5em;
+    }
+    main h2 {
+        font-size: 1.3em;
+    }
+    body {
+        line-height: 1.6; /* Slightly tighter line height on small screens */
+    }
+     header, main, footer {
+        padding: 15px;
+    }
+     .container {
+         padding: 0 10px;
          margin: 15px auto;
+    }
+     ul {
+        padding-left: 20px;
     }
 }

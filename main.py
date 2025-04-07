@@ -12,7 +12,7 @@ from datetime import datetime
 load_dotenv()
 
 # Basic Logging Setup
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s') # Set level to DEBUG
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # --- Configuration ---
 OUTPUT_DIR = "." # Output files to the project root
@@ -51,47 +51,37 @@ def fetch_data():
         logging.info(f"Found 'Events' heading: <{events_h2.name} id='{events_h2.get('id')}'>")
 
         tech_events = []
-        tech_keywords = ["computer", "internet", "software", "semiconductor", "microprocessor", "apple", "microsoft", "google", "ibm", "intel", "nasa", "space", "digital", "network", "web", "programming", "code", "algorithm", "robot", "phone", "mobile", "at&t", "system/360", "rfc 1"]
+        tech_keywords = ["computer", "internet", "software", "semiconductor", "microprocessor", "apple", "microsoft", "google", "ibm", "intel", "nasa", "space", "digital", "network", "web", "programming", "code", "algorithm", "robot", "phone", "mobile", "at&t", "system/360", "rfc 1"] # Keywords used to filter events
 
         # Iterate through *all* subsequent tags until the next H2
-        logging.debug("Starting iteration through all tags after Events H2...")
         for element in events_h2.find_all_next():
             # Stop if we hit the next H2 (e.g., "Births", "Deaths")
             if element.name == 'h2':
-                logging.debug(f"Found next H2 ('{element.get_text(strip=True)[:30]}...'), stopping processing for Events.")
                 break
 
             # Process only UL elements encountered
             if element.name == 'ul':
                 list_items = element.find_all('li', recursive=False)
-                logging.debug(f"Processing a UL with {len(list_items)} direct li elements.")
                 for item in list_items:
                     item_text_content = item.get_text(" ", strip=True).lower()
-                    logging.debug(f"Checking item text: '{item_text_content}'")
 
                     keyword_found = False
                     matching_keyword = None
                     for keyword in tech_keywords:
-                        # Use word boundaries (\b) for keywords like 'web' to avoid matching 'webster' etc.
-                        # Handle potential regex special characters in keywords if necessary
-                        # For simplicity now, just check substring containment
                         if keyword in item_text_content:
                             keyword_found = True
                             matching_keyword = keyword
-                            break
+                            break 
 
                     if keyword_found:
-                         logging.debug(f"  Keyword '{matching_keyword}' FOUND in item: '{item_text_content[:50]}...'")
                          cleaned_item = item
                          for tag in cleaned_item.find_all(['sup', 'span'], {'class': ['reference', 'noprint']}):
                              tag.decompose()
                          event_text = cleaned_item.get_text(" ", strip=True)
-                         # Avoid duplicates if the same event is listed under multiple subheadings
+                         # Avoid duplicates
                          if event_text not in tech_events:
                               tech_events.append(event_text)
                               logging.info(f"Found tech event: {event_text[:80]}...")
-                         else:
-                              logging.debug(f"Skipping duplicate event: {event_text[:80]}...")
 
 
         if not tech_events:
@@ -322,9 +312,10 @@ def job():
                     logging.info("Pushing changes to origin main...")
                     push_result = subprocess.run(['git', 'push', 'origin', 'main'], check=True, capture_output=True, text=True, cwd='.')
                     logging.info("Changes pushed successfully.")
-                    logging.debug(f"Git push output: {push_result.stdout}\n{push_result.stderr}")
+                    # logging.debug(f"Git push output: {push_result.stdout}\n{push_result.stderr}") # Keep DEBUG if needed
                 else:
-                    logging.info("No changes detected in output_html to commit.")
+                    # This log message might be incorrect if only non-HTML files changed
+                    logging.info("No staged changes detected to commit.") 
                     
             except subprocess.CalledProcessError as e:
                 logging.error(f"Git command failed: {e}")
@@ -352,14 +343,12 @@ scheduler.add_job(job, 'cron', hour=1, minute=0)
 
 # --- Main Execution ---
 if __name__ == "__main__":
-    # Run the job once immediately for testing fetch_data fix
-    logging.info("Running job manually one time for fetch_data test...")
-    job()
-    logging.info("Manual fetch_data test job run finished.")
-
-    # We are stopping here for now, not starting the scheduler for this manual run.
-    # logging.info("Starting the scheduler...")
-    # try:
-    #     scheduler.start()
-    # except (KeyboardInterrupt, SystemExit):
-    #     logging.info("Scheduler stopped.")
+    logging.info("Starting the scheduler...")
+    # Optional: Run the job once immediately on startup before scheduling
+    # logging.info("Running initial job before starting scheduler...")
+    # job() 
+    
+    try:
+        scheduler.start()
+    except (KeyboardInterrupt, SystemExit):
+        logging.info("Scheduler stopped.")
