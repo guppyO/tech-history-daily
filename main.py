@@ -50,12 +50,17 @@ def fetch_data():
         
         logging.info(f"Found 'Events' heading: <{events_h2.name} id='{events_h2.get('id')}'>")
 
-        # Find the next <ul> tag after the H2 heading, searching siblings and descendants
-        events_list = events_h2.find_next('ul')
+        # Find all <ul> tags that appear *after* the H2 heading in the document
+        potential_lists = events_h2.find_all_next('ul')
 
-        if not events_list:
-            logging.warning(f"Could not find any 'ul' tag following the 'Events' H2 on {wiki_url}")
-            return None
+        if not potential_lists:
+             logging.warning(f"Could not find any 'ul' tags following the 'Events' H2 on {wiki_url}")
+             return None
+        
+        # Assume the first <ul> found after the heading is the correct one
+        events_list = potential_lists[0]
+        logging.info(f"Found potential events list (first UL after heading).")
+
 
         tech_events = []
         tech_keywords = ["computer", "internet", "software", "semiconductor", "microprocessor", "apple", "microsoft", "google", "ibm", "intel", "nasa", "space", "digital", "network", "web", "programming", "code", "algorithm", "robot", "phone", "mobile"]
